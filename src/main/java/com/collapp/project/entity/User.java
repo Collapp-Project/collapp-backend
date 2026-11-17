@@ -11,6 +11,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import com.collapp.project.entity.enums.Specialty;
 import com.collapp.project.entity.enums.SystemRole;
 
+/** Sin @Data a propósito: generaría equals/hashCode sobre campos no estables y un toString que toca colecciones LAZY. */
 @Entity
 @Table(name = "users")
 @Getter

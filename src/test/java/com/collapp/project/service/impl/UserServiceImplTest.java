@@ -50,7 +50,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void getCurrentUser_success() {
+    void devuelve_el_perfil_del_usuario_autenticado() {
         when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
         when(userMapper.toResponse(user)).thenReturn(userResponse);
 
@@ -64,7 +64,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void getCurrentUser_notFound_throws() {
+    void lanza_not_found_si_el_usuario_no_existe() {
         when(userRepository.findByEmail("nonexistent@test.com")).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class,
@@ -72,7 +72,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void updateCurrentUser_success() {
+    void actualiza_el_perfil_del_usuario_autenticado() {
         UserUpdateRequest updateRequest = TestObjectFactory.createUserUpdateRequest();
 
         when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
@@ -87,7 +87,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void updateCurrentUser_partialUpdate() {
+    void actualiza_solo_los_campos_enviados() {
         UserUpdateRequest partialUpdate = new UserUpdateRequest(null, "Only bio", null, null, null);
 
         when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
@@ -101,7 +101,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void updateCurrentUser_notFound_throws() {
+    void lanza_not_found_al_actualizar_un_usuario_inexistente() {
         UserUpdateRequest updateRequest = TestObjectFactory.createUserUpdateRequest();
 
         when(userRepository.findByEmail("nonexistent@test.com")).thenReturn(Optional.empty());

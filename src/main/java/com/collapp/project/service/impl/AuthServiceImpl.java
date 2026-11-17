@@ -4,8 +4,8 @@ import com.collapp.project.dto.auth.AuthResponse;
 import com.collapp.project.dto.auth.LoginRequest;
 import com.collapp.project.dto.auth.RegisterRequest;
 import com.collapp.project.entity.User;
-import com.collapp.project.entity.enums.SystemRole;
 import com.collapp.project.repository.UserRepository;
+import com.collapp.project.mapper.UserMapper;
 import com.collapp.project.security.CustomUserDetails;
 import com.collapp.project.security.JwtService;
 import com.collapp.project.service.AuthService;
@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
@@ -36,19 +37,7 @@ public class AuthServiceImpl implements AuthService {
             throw new EntityExistsException("El email ya está registrado: " + request.email());
         }
 
-        User user = User.builder()
-                .username(request.username())
-                .fullName(request.fullName())
-                .email(request.email())
-                .passwordHash(passwordEncoder.encode(request.password()))
-                .specialty(request.specialty())
-                .systemRole(SystemRole.ROLE_CREATIVE)
-                .avatarUrl(request.avatarUrl())
-                .portfolioUrl(request.portfolioUrl())
-                .instagramUrl(request.instagramUrl())
-                .bio(request.bio())
-                .build();
-
+        User user = userMapper.toEntity(request, passwordEncoder.encode(request.password()));
         userRepository.save(user);
 
         String token = jwtService.generateToken(new CustomUserDetails(user));

@@ -1,6 +1,7 @@
 package com.collapp.project.dto.offer;
 
 import com.collapp.project.entity.enums.CompensationType;
+import com.collapp.project.entity.enums.Location;
 import com.collapp.project.entity.enums.OfferStatus;
 import com.collapp.project.entity.enums.Specialty;
 
@@ -15,7 +16,7 @@ public record OfferResponse(
         String title,
         String description,
         Specialty category,
-        String location,
+        Location location,
         LocalDate startDate,
         LocalDate endDate,
         CompensationType compensationType,

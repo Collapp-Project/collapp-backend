@@ -8,6 +8,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import com.collapp.project.entity.enums.ApplicationStatus;
 
+/** Sin @Data a propósito: generaría equals/hashCode sobre campos no estables y un toString que toca colecciones LAZY. */
 @Entity
 @Table(name = "applications", uniqueConstraints = @UniqueConstraint(columnNames = { "offer_id", "applicant_id" }))
 @Getter
