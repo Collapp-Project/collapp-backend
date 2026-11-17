@@ -1,8 +1,5 @@
-package com.collapp.project.config;
+package com.collapp.project.security;
 
-import com.collapp.project.security.JwtAuthFilter;
-import com.collapp.project.security.RestAccessDeniedHandler;
-import com.collapp.project.security.RestAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
