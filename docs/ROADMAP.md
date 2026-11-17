@@ -9,18 +9,21 @@ Cada tarea lleva una etiqueta de origen:
 - **[FB]** viene del feedback de la presentación final.
 - **[REV]** ha salido de la revisión del código.
 
+> **Progreso (nov. 2026):** la Fase 0 está completa y, de la Fase 1, están hechos 1.1, 1.2, 1.3,
+> 1.6 y 1.9. Las tareas terminadas llevan ✅; las parcialmente hechas, ⚠️.
+
 ---
 
 ## Fase 0 — Feedback de la presentación (rápido, cierra el ciclo del bootcamp)
 
 Todo esto es de bajo riesgo y se puede hacer en una o dos sesiones.
 
-### 0.1 Mover `SecurityConfig` a `security/` **[FB]**
+### 0.1 Mover `SecurityConfig` a `security/` **[FB]** ✅
 `config/SecurityConfig.java` → `security/SecurityConfig.java`. El paquete `config` queda vacío;
 se puede eliminar o reservarlo para configuración transversal no relacionada con seguridad
 (CORS properties, Jackson, OpenAPI). Es solo cambiar el `package` y el import en quien lo use.
 
-### 0.2 Validar el rango de fechas de la oferta **[FB]**
+### 0.2 Validar el rango de fechas de la oferta **[FB]** ✅
 Hoy `OfferRequest` valida `@FutureOrPresent` en `startDate` pero `endDate` no valida nada: se puede
 crear una oferta que termina en 2020 o antes de empezar.
 
@@ -37,7 +40,7 @@ en `endDate`. Los errores caen solos en el handler de `MethodArgumentNotValidExc
 ojo: los errores de clase son `getGlobalErrors()`, no `getFieldErrors()` — hay que añadirlos al
 mapa de respuesta (ver 0.6).
 
-### 0.3 Usar los mappers en `ApplicationServiceImpl.create` y `AuthServiceImpl.register` **[FB]**
+### 0.3 Usar los mappers en `ApplicationServiceImpl.create` y `AuthServiceImpl.register` **[FB]** ✅
 Ahora mismo esos dos métodos construyen la entidad a mano dentro del servicio, mientras que el
 resto del código pasa por el mapper. Añadir a cada mapper el sentido inverso:
 
@@ -55,7 +58,7 @@ compilación, elimina ~150 líneas de código repetitivo y es lo que se usa en p
 Convive bien con Lombok si se ordena el `annotationProcessorPaths` (lombok → lombok-mapstruct-binding
 → mapstruct-processor).
 
-### 0.4 Normalizar `location` **[FB]**
+### 0.4 Normalizar `location` **[FB]** ✅ (elegida la opción enum)
 Hoy es un `String` libre: "Madrid", "madrid", "Madrid, España" y "MAD" son cuatro ubicaciones
 distintas, lo que hace imposible filtrar bien.
 
@@ -70,7 +73,7 @@ Dos opciones, y la recomendación depende del alcance que quieras darle:
 a tabla más adelante es una migración de datos sencilla (los valores ya están normalizados).
 Si vas a añadir "buscar ofertas cerca de mí", ve directo a la tabla con `latitude`/`longitude`.
 
-### 0.5 `@Data` en las entidades **[FB]** — con matiz
+### 0.5 `@Data` en las entidades **[FB]** ✅ — con matiz
 El feedback propone sustituir `@Getter @Setter @EqualsAndHashCode @ToString` por `@Data`.
 Es cierto que queda más limpio, pero conviene saber el porqué de lo que hay ahora, porque
 `@Data` en entidades JPA es un antipatrón conocido:
@@ -91,7 +94,7 @@ anotación propia `@JpaEntity` que agrupe el conjunto correcto, o pasar a
 `@Getter @Setter @ToString(onlyExplicitlyIncluded = true)` y un `equals`/`hashCode` escrito a mano
 basado solo en el `id`.
 
-### 0.6 Que las validaciones lleguen al frontend en un formato usable **[FB, frontend]**
+### 0.6 Que las validaciones lleguen al frontend en un formato usable **[FB, frontend]** ✅
 El feedback del frontend dice que las validaciones "deberían venir directamente del backend".
 Eso es trabajo de backend: hoy las respuestas de error son `Map<String, Object>` construidos
 ad-hoc, con dos formas distintas (unas con `error`, otras con `error` + `fields`), lo que obliga
@@ -120,7 +123,7 @@ bajo una clave convenida, p. ej. `fields.put("_form", mensaje)`.
 
 Esto no salió en la presentación pero es lo que más impacto tiene en la calidad real del proyecto.
 
-### 1.1 Un token inválido o caducado provoca un 500 **[REV]** — *prioridad alta*
+### 1.1 Un token inválido o caducado provoca un 500 **[REV]** — *prioridad alta* ✅
 `JwtAuthFilter.doFilterInternal` llama a `jwtService.extractEmail(jwt)` sin protección. Con un
 token caducado, manipulado o simplemente basura, JJWT lanza `ExpiredJwtException` /
 `SignatureException` / `MalformedJwtException` desde dentro del filtro. Como se lanza en la cadena
@@ -131,12 +134,12 @@ Arreglo: envolver la extracción en `try/catch`, y en caso de fallo dejar el `Se
 vacío y continuar la cadena. Al no haber autenticación, el `ExceptionTranslationFilter` devolverá
 el 401 correcto.
 
-### 1.2 Faltan `AuthenticationEntryPoint` y `AccessDeniedHandler` **[REV]**
+### 1.2 Faltan `AuthenticationEntryPoint` y `AccessDeniedHandler` **[REV]** ✅
 Cuando una petición sin token llega a un endpoint protegido, Spring responde con su formato por
 defecto, distinto del `ApiError` del resto de la API. Registrar ambos handlers en `SecurityConfig`
 para que escriban el mismo JSON. Va de la mano con 0.6.
 
-### 1.3 Un enum inválido en el body o en el query param devuelve 500 **[REV]**
+### 1.3 Un enum inválido en el body o en el query param devuelve 500 **[REV]** ✅
 `@ExceptionHandler(Exception.class)` se evalúa antes que los resolvers por defecto de Spring, así
 que se está tragando excepciones que Spring ya sabía convertir en 400:
 
@@ -174,7 +177,7 @@ Arreglo: `@EntityGraph(attributePaths = {"creator"})` en los métodos de `OfferR
 Para verificarlo, añadir en el perfil de desarrollo un contador de consultas
 (`spring.jpa.properties.hibernate.generate_statistics=true`) o la librería `datasource-proxy`.
 
-### 1.6 El `DataSeeder` crea un admin con contraseña conocida en todos los perfiles **[REV]** — *prioridad alta*
+### 1.6 El `DataSeeder` crea un admin con contraseña conocida en todos los perfiles **[REV]** — *prioridad alta* ✅
 `admin@collapp.com` / `12345678` se crea también en producción si la base está vacía. Anotar la
 clase con `@Profile("dev")` (o `@ConditionalOnProperty(name = "collapp.seed.enabled")`) y activarla
 solo en local y en el entorno de demo.
@@ -192,7 +195,7 @@ Bonus: los tests con H2 pasan a ejecutar las mismas migraciones, así que dejan 
 esquema distinto del de producción. (Alternativa aún mejor para los tests: **Testcontainers** con
 PostgreSQL real — ver 3.2.)
 
-### 1.8 Endurecer el JWT **[REV]**
+### 1.8 Endurecer el JWT **[REV]** ⚠️ parcial (el claim `role` ya va en el token)
 - **Validar la longitud del secreto al arrancar.** `Keys.hmacShaKeyFor()` exige 32 bytes para
   HS256; con un `JWT_SECRET` corto la aplicación falla en la primera petición, no al arrancar.
   Validarlo en un `@PostConstruct` con un mensaje claro.
@@ -202,7 +205,7 @@ PostgreSQL real — ver 3.2.)
   revocar. El objetivo es access token corto (15 min) + refresh token de larga duración guardado
   en base de datos y revocable. Habilita también un logout real.
 
-### 1.9 Coherencia de permisos en las ofertas **[REV]**
+### 1.9 Coherencia de permisos en las ofertas **[REV]** ✅
 `GET /api/offers` es público pero `GET /api/offers/{id}` exige autenticación. Un visitante puede
 ver el listado y recibe un 401 al pulsar en una oferta. Hacer público el detalle
 (`.requestMatchers(HttpMethod.GET, "/api/offers/*").permitAll()`) o proteger ambos, pero no mezclar.
@@ -252,7 +255,7 @@ tipo de compensación, rango de fechas y búsqueda de texto en título/descripci
 `GET /api/offers?category=&location=&compensationType=&from=&to=&q=` y el frontend gana una pantalla
 de búsqueda completa sin backend nuevo.
 
-### 2.3 Paginación en todo lo que es una lista
+### 2.3 Paginación en todo lo que es una lista ⚠️ parcial (solo el listado público)
 `/api/offers/mine`, `/api/offers/all`, `/api/applications/mine` y
 `/api/offers/{id}/applications` devuelven `List` sin límite. Pasarlos todos a `Page`,
 con `@PageableDefault(size = 20, sort = "createdAt", direction = DESC)` para que el orden sea

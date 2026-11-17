@@ -89,3 +89,7 @@ unverified by the suite — see `docs/ROADMAP.md`, task 3.2.
 hardcoded in `SecurityConfig` (1.12), there is no `@Transactional` anywhere and `open-in-view`
 is still on (1.4), listings have N+1 queries (1.5), and the schema is managed by
 `ddl-auto=update` instead of migrations (1.7).
+
+Offer `location` is now the `Location` enum (Spanish provinces): any pre-existing rows with
+free-text locations in a dev database must be re-seeded or updated, or reads will fail. The
+frontend must send enum names (e.g. `"BARCELONA"`), not free text.
