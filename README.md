@@ -1,5 +1,6 @@
 # 🤝 Collapp Backend
 
+[![CI](https://github.com/Collapp-Project/collapp-backend/actions/workflows/ci.yml/badge.svg)](https://github.com/Collapp-Project/collapp-backend/actions/workflows/ci.yml)
 [![Java](https://img.shields.io/badge/Java-25-orange.svg)](https://www.oracle.com/java/technologies/downloads/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.16-6DB33F.svg)](https://spring.io/projects/spring-boot)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1.svg)](https://www.postgresql.org/)
@@ -19,6 +20,8 @@ REST API backend for Collapp, a professional collaboration platform for creative
 - PostgreSQL (production) / H2 (tests)
 - JWT (jjwt 0.12.6) — stateless authentication
 - Bean Validation, including custom class-level constraints (`@ValidDateRange`)
+- springdoc-openapi (Swagger UI)
+- Testcontainers (integration tests against real PostgreSQL)
 - Maven (wrapper included)
 - Lombok
 
@@ -72,10 +75,25 @@ The API will be available at `http://localhost:8080`.
 ## 🧪 Tests
 
 ```bash
-./mvnw test
+./mvnw test          # unit tests + integration tests
+./mvnw verify -Pci   # full build with the 70% line-coverage gate
 ```
 
-Tests use an in-memory H2 database (`application-test.properties`), no PostgreSQL required.
+- **Unit tests** (JUnit 5 + Mockito) cover services and mappers.
+- **Integration tests** (`integration/ApiIntegrationTest`) run against a real PostgreSQL via
+  Testcontainers and validate routing, security and serialisation end to end. They need Docker
+  running; without Docker they are skipped automatically.
+- **Coverage** is measured with JaCoCo (`target/site/jacoco`). CI fails below 70% line coverage.
+
+## 📚 API Documentation
+
+With the application running:
+
+- Swagger UI: `http://localhost:8080/swagger-ui.html`
+- OpenAPI JSON: `http://localhost:8080/v3/api-docs`
+
+Every endpoint documents its error codes. Use the **Authorize** button to send the JWT
+(`bearerAuth` scheme).
 
 ## 🏗️ Architecture Diagram
 
@@ -325,8 +343,8 @@ This project is a living portfolio: it keeps evolving following the plan in
 |---|---|---|
 | Error contract & correct HTTP codes | `ApiError`, 401/403 handlers, no silent 500s | ✅ Done |
 | Presentation feedback | Date-range validation, entity construction in mappers, normalized locations | ✅ Done |
-| API docs, integration tests & CI | OpenAPI/Swagger, Testcontainers, GitHub Actions | 🔜 Next |
-| Transactions, N+1 & migrations | `@Transactional`, `@EntityGraph`, Flyway | ⏳ Planned |
+| API docs, integration tests & CI | OpenAPI/Swagger, Testcontainers, GitHub Actions | ✅ Done |
+| Transactions, N+1 & migrations | `@Transactional`, `@EntityGraph`, Flyway | 🔜 Next |
 | Docker & deployment | Multi-stage Dockerfile, docker-compose, live API | ⏳ Planned |
 | New product features | Avatar upload, search, public profiles, notifications | ⏳ Planned |
 

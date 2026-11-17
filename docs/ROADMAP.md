@@ -9,8 +9,9 @@ Cada tarea lleva una etiqueta de origen:
 - **[FB]** viene del feedback de la presentación final.
 - **[REV]** ha salido de la revisión del código.
 
-> **Progreso (nov. 2026):** la Fase 0 está completa y, de la Fase 1, están hechos 1.1, 1.2, 1.3,
-> 1.6 y 1.9. Las tareas terminadas llevan ✅; las parcialmente hechas, ⚠️.
+> **Progreso (nov. 2026):** la Fase 0 está completa, de la Fase 1 están hechos 1.1, 1.2, 1.3,
+> 1.6 y 1.9, y de la Fase 3 están hechas 3.1, 3.2 y 3.3 (cobertura de líneas actual: 86 %).
+> Las tareas terminadas llevan ✅; las parcialmente hechas, ⚠️.
 
 ---
 
@@ -289,13 +290,13 @@ más claro que acumular reglas de URL en `SecurityConfig`.
 
 ## Fase 3 — Calidad, herramientas y despliegue
 
-### 3.1 Documentación de la API con OpenAPI/Swagger — *hazlo pronto*
+### 3.1 Documentación de la API con OpenAPI/Swagger — *hazlo pronto* ✅
 Añadir `springdoc-openapi-starter-webmvc-ui`. Con la dependencia y poco más ya tienes
 `/swagger-ui.html` navegable. Es lo primero que mira alguien que evalúa el proyecto, y le ahorra al
 frontend tener que preguntarte el contrato de cada endpoint. Documentar los códigos de error con
 `@ApiResponse` y añadir el esquema de seguridad `bearerAuth`.
 
-### 3.2 Tests de integración
+### 3.2 Tests de integración ✅
 Los tests actuales son unitarios con mocks: prueban la lógica de los servicios pero **ninguno prueba
 la seguridad, el enrutado ni la serialización**. Los bugs 1.1, 1.3 y 1.9 los habría cazado un test
 de integración.
@@ -308,7 +309,7 @@ que los tests validen contra el mismo motor que producción.
 Meta razonable: cobertura de líneas por encima del 70 % medida con **JaCoCo**, con el informe
 publicado en CI.
 
-### 3.3 CI en GitHub Actions
+### 3.3 CI en GitHub Actions ✅ (análisis estático pendiente)
 El workflow que había se ha borrado (aparece como eliminado en el `git status` actual). Reponer uno
 que en cada push y cada PR ejecute `./mvnw verify`, publique el informe de JaCoCo y falle si bajan
 los tests. Añadir después análisis estático: **Spotless** (formato), **Checkstyle** o **PMD**, y
