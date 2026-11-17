@@ -9,9 +9,9 @@ Java 25 · Spring Boot 3.5.16 · PostgreSQL · JWT (jjwt) · Maven.
 ## Commands
 
 ```bash
-./mvnw test                  # unit tests (JUnit 5 + Mockito, H2 in-memory)
+./mvnw test                  # unit + integration tests
 ./mvnw spring-boot:run       # run locally on :8080
-./mvnw verify                # full build
+./mvnw verify -Pci           # full build with the 70% line-coverage gate
 ```
 
 ## Configuration
@@ -91,22 +91,25 @@ in `GlobalExceptionHandler`.
 
 ## Security notes
 
-- Public routes: `POST /api/auth/**`, `GET /api/offers` and `GET /api/offers/{id}`.
-  `GET /api/offers/all` is admin-only and `GET /api/offers/mine` requires auth — both are
-  matched **before** the public wildcard in `SecurityConfig`, and that order matters.
+- Public routes: `POST /api/auth/**`, `GET /api/offers` and `GET /api/offers/{id}`, plus
+  the OpenAPI docs (`/swagger-ui/**`, `/v3/api-docs/**`). `GET /api/offers/all` is
+  admin-only and `GET /api/offers/mine` requires auth — both are matched **before** the
+  public wildcard in `SecurityConfig`, and that order matters.
 - The JWT subject is the user email; claims include `role`.
 - `JwtAuthFilter` swallows invalid/expired tokens and leaves the context empty, so the
   `ExceptionTranslationFilter` returns the 401.
 
 ## Testing
 
-Unit tests with Mockito (`@ExtendWith(MockitoExtension.class)`, `@Mock`/`@InjectMocks`).
-Shared fixtures live in `util/TestObjectFactory`. **Test names are descriptive sentences
-in Spanish.** When stubbing mappers, return fixtures consistent with the input (the real
-mapper derives entities from the request).
+Unit tests with Mockito (`@ExtendWith(MockitoExtension.class)`, `@Mock`/`@InjectMocks`)
+cover services and mappers. `integration/ApiIntegrationTest` runs end-to-end against a
+real PostgreSQL via Testcontainers (skipped automatically without Docker): it validates
+routing, security and serialisation. Shared fixtures live in `util/TestObjectFactory`.
+**Test names are descriptive sentences in Spanish.** When stubbing mappers, return
+fixtures consistent with the input (the real mapper derives entities from the request).
 
-There are no integration tests yet, so routing, security and serialization are currently
-unverified by the suite — see `docs/ROADMAP.md`, task 3.2 (next block).
+Coverage is measured with JaCoCo (`target/site/jacoco`, currently ~86% of lines). The
+70% gate only applies with `-Pci`, so local builds do not fail without Docker.
 
 ## Known gaps
 
