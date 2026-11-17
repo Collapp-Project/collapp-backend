@@ -6,6 +6,7 @@ import com.collapp.project.dto.auth.RegisterRequest;
 import com.collapp.project.entity.User;
 import com.collapp.project.entity.enums.SystemRole;
 import com.collapp.project.repository.UserRepository;
+import com.collapp.project.mapper.UserMapper;
 import com.collapp.project.security.CustomUserDetails;
 import com.collapp.project.security.JwtService;
 import com.collapp.project.util.TestObjectFactory;
@@ -38,6 +39,9 @@ class AuthServiceImplTest {
     private UserRepository userRepository;
 
     @Mock
+    private UserMapper userMapper;
+
+    @Mock
     private PasswordEncoder passwordEncoder;
 
     @Mock
@@ -68,7 +72,19 @@ class AuthServiceImplTest {
         when(userRepository.existsByUsername(registerRequest.username())).thenReturn(false);
         when(userRepository.existsByEmail(registerRequest.email())).thenReturn(false);
         when(passwordEncoder.encode(anyString())).thenReturn("encoded_password");
-        when(userRepository.save(any(User.class))).thenReturn(user);
+
+        // El mapper real construye el usuario a partir del request, así que el stub debe ser coherente con él.
+        User registered = User.builder()
+                .username(registerRequest.username())
+                .fullName(registerRequest.fullName())
+                .email(registerRequest.email())
+                .passwordHash("encoded_password")
+                .specialty(registerRequest.specialty())
+                .systemRole(SystemRole.ROLE_CREATIVE)
+                .build();
+
+        when(userMapper.toEntity(registerRequest, "encoded_password")).thenReturn(registered);
+        when(userRepository.save(any(User.class))).thenReturn(registered);
         when(jwtService.generateToken(any(CustomUserDetails.class))).thenReturn(JWT_TOKEN);
 
         AuthResponse result = authService.register(registerRequest);
@@ -77,6 +93,7 @@ class AuthServiceImplTest {
         assertEquals(JWT_TOKEN, result.token());
         assertEquals(registerRequest.username(), result.username());
         assertEquals(SystemRole.ROLE_CREATIVE.name(), result.role());
+        verify(userMapper).toEntity(registerRequest, "encoded_password");
         verify(userRepository).save(any(User.class));
         verify(jwtService).generateToken(any(CustomUserDetails.class));
     }

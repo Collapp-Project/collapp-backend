@@ -76,6 +76,7 @@ class OfferServiceImplTest {
     @Test
     void create_success() {
         when(userRepository.findByEmail(creator.getEmail())).thenReturn(Optional.of(creator));
+        when(offerMapper.toEntity(offerRequest, creator)).thenReturn(offer);
         when(offerRepository.save(any(Offer.class))).thenReturn(offer);
         when(offerMapper.toResponse(offer)).thenReturn(offerResponse);
 
@@ -83,6 +84,7 @@ class OfferServiceImplTest {
 
         assertNotNull(result);
         assertEquals("Test Offer", result.title());
+        verify(offerMapper).toEntity(offerRequest, creator);
         verify(offerRepository).save(any(Offer.class));
         verify(offerMapper).toResponse(offer);
     }
@@ -106,6 +108,7 @@ class OfferServiceImplTest {
         OfferResponse result = offerService.update(offer.getId(), offerRequest, creator.getEmail());
 
         assertNotNull(result);
+        verify(offerMapper).updateEntity(offer, offerRequest);
         verify(offerRepository).save(offer);
     }
 

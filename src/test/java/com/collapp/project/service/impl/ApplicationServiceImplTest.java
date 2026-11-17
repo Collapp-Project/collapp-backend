@@ -79,6 +79,7 @@ class ApplicationServiceImplTest {
         when(offerRepository.findById(applicationRequest.offerId())).thenReturn(Optional.of(offer));
         when(userRepository.findByEmail(applicant.getEmail())).thenReturn(Optional.of(applicant));
         when(applicationRepository.existsByOfferIdAndApplicantId(offer.getId(), applicant.getId())).thenReturn(false);
+        when(applicationMapper.toEntity(applicationRequest, offer, applicant)).thenReturn(application);
         when(applicationRepository.save(any(Application.class))).thenReturn(application);
         when(applicationMapper.toResponse(application)).thenReturn(applicationResponse);
 
@@ -87,6 +88,7 @@ class ApplicationServiceImplTest {
         assertNotNull(result);
         assertEquals(applicationResponse.id(), result.id());
         assertEquals(applicationResponse.status(), result.status());
+        verify(applicationMapper).toEntity(applicationRequest, offer, applicant);
         verify(applicationRepository).save(any(Application.class));
         verify(applicationMapper).toResponse(application);
     }

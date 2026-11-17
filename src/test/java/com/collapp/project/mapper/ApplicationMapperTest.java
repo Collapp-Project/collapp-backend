@@ -1,5 +1,6 @@
 package com.collapp.project.mapper;
 
+import com.collapp.project.dto.application.ApplicationRequest;
 import com.collapp.project.dto.application.ApplicationResponse;
 import com.collapp.project.entity.Application;
 import com.collapp.project.entity.Offer;
@@ -79,5 +80,18 @@ class ApplicationMapperTest {
         assertEquals(applicant.getAvatarUrl(), response.applicantAvatarUrl());
         assertEquals(application.getMessage(), response.message());
         assertEquals(application.getStatus(), response.status());
+    }
+
+    @Test
+    void toEntity_mapeaLosCamposYFijaEstadoInicial() {
+        ApplicationRequest request = TestObjectFactory.createApplicationRequest();
+
+        Application entity = applicationMapper.toEntity(request, offer, applicant);
+
+        assertNotNull(entity);
+        assertEquals(offer, entity.getOffer());
+        assertEquals(applicant, entity.getApplicant());
+        assertEquals(request.message(), entity.getMessage());
+        assertEquals(ApplicationStatus.PENDING, entity.getStatus());
     }
 }

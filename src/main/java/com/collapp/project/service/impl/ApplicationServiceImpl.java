@@ -3,7 +3,6 @@ import com.collapp.project.dto.application.ApplicationRequest;
 import com.collapp.project.dto.application.ApplicationResponse;
 import com.collapp.project.dto.application.ApplicationStatusRequest;
 import com.collapp.project.entity.Application;
-import com.collapp.project.entity.enums.ApplicationStatus;
 import com.collapp.project.entity.Offer;
 import com.collapp.project.entity.User;
 import com.collapp.project.exception.DuplicateApplicationException;
@@ -38,14 +37,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         validateNotOwnOffer(offer, applicant);
         validateNotAlreadyApplied(offer, applicant);
 
-        Application application = new Application();
-        application.setOffer(offer);
-        application.setApplicant(applicant);
-        application.setMessage(request.message());
-        application.setStatus(ApplicationStatus.PENDING);
-
-        Application saved = applicationRepository.save(application);
-        return applicationMapper.toResponse(saved);
+        Application application = applicationMapper.toEntity(request, offer, applicant);
+        return applicationMapper.toResponse(applicationRepository.save(application));
     }
 
     @Override

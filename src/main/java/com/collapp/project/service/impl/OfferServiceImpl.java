@@ -32,18 +32,7 @@ public class OfferServiceImpl implements OfferService {
     public OfferResponse create(OfferRequest request, String creatorEmail) {
         User creator = findUserByEmail(creatorEmail);
 
-        Offer offer = Offer.builder()
-                .creator(creator)
-                .title(request.title())
-                .description(request.description())
-                .category(request.category())
-                .location(request.location())
-                .startDate(request.startDate())
-                .endDate(request.endDate())
-                .compensationType(request.compensationType())
-                .status(OfferStatus.OPEN)
-                .build();
-
+        Offer offer = offerMapper.toEntity(request, creator);
         return offerMapper.toResponse(offerRepository.save(offer));
     }
 
@@ -52,15 +41,7 @@ public class OfferServiceImpl implements OfferService {
         Offer offer = findOfferById(offerId);
         assertIsOwner(offer, requesterEmail);
 
-        offer.setTitle(request.title());
-        offer.setDescription(request.description());
-        offer.setCategory(request.category());
-        offer.setLocation(request.location());
-        offer.setStartDate(request.startDate());
-        offer.setEndDate(request.endDate());
-        offer.setCompensationType(request.compensationType());
-        offer.setStatus(request.status());
-
+        offerMapper.updateEntity(offer, request);
         return offerMapper.toResponse(offerRepository.save(offer));
     }
 
