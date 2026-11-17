@@ -23,7 +23,7 @@ class UserMapperTest {
     }
 
     @Test
-    void toResponse_mapsAllFields() {
+    void toResponse_mapea_todos_los_campos() {
         UserResponse response = userMapper.toResponse(user);
 
         assertNotNull(response);

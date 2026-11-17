@@ -68,7 +68,7 @@ class AuthServiceImplTest {
     }
 
     @Test
-    void register_success() {
+    void registra_un_usuario_y_devuelve_el_token() {
         when(userRepository.existsByUsername(registerRequest.username())).thenReturn(false);
         when(userRepository.existsByEmail(registerRequest.email())).thenReturn(false);
         when(passwordEncoder.encode(anyString())).thenReturn("encoded_password");
@@ -99,7 +99,7 @@ class AuthServiceImplTest {
     }
 
     @Test
-    void register_duplicateUsername_throws() {
+    void lanza_conflicto_si_el_username_ya_esta_en_uso() {
         when(userRepository.existsByUsername(registerRequest.username())).thenReturn(true);
 
         assertThrows(EntityExistsException.class,
@@ -109,7 +109,7 @@ class AuthServiceImplTest {
     }
 
     @Test
-    void register_duplicateEmail_throws() {
+    void lanza_conflicto_si_el_email_ya_esta_registrado() {
         when(userRepository.existsByUsername(registerRequest.username())).thenReturn(false);
         when(userRepository.existsByEmail(registerRequest.email())).thenReturn(true);
 
@@ -120,7 +120,7 @@ class AuthServiceImplTest {
     }
 
     @Test
-    void login_success() {
+    void inicia_sesion_y_devuelve_el_token() {
         Authentication authentication = new UsernamePasswordAuthenticationToken(
                 userDetails, null, userDetails.getAuthorities()
         );
@@ -140,7 +140,7 @@ class AuthServiceImplTest {
     }
 
     @Test
-    void login_badCredentials_throws() {
+    void lanza_excepcion_con_credenciales_invalidas() {
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenThrow(new BadCredentialsException("Bad credentials"));
 

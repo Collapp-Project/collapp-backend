@@ -26,7 +26,7 @@ class OfferMapperTest {
     }
 
     @Test
-    void toResponse_mapsAllFields() {
+    void toResponse_mapea_todos_los_campos() {
         OfferResponse response = offerMapper.toResponse(offer);
 
         assertNotNull(response);

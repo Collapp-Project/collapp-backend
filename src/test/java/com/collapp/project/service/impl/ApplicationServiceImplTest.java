@@ -75,7 +75,7 @@ class ApplicationServiceImplTest {
     }
 
     @Test
-    void create_success() {
+    void crea_una_candidatura_y_devuelve_la_respuesta() {
         when(offerRepository.findById(applicationRequest.offerId())).thenReturn(Optional.of(offer));
         when(userRepository.findByEmail(applicant.getEmail())).thenReturn(Optional.of(applicant));
         when(applicationRepository.existsByOfferIdAndApplicantId(offer.getId(), applicant.getId())).thenReturn(false);
@@ -94,7 +94,7 @@ class ApplicationServiceImplTest {
     }
 
     @Test
-    void create_selfApplication_throws() {
+    void lanza_excepcion_al_aplicar_a_la_propia_oferta() {
         when(offerRepository.findById(applicationRequest.offerId())).thenReturn(Optional.of(offer));
         when(userRepository.findByEmail(creator.getEmail())).thenReturn(Optional.of(creator));
 
@@ -105,7 +105,7 @@ class ApplicationServiceImplTest {
     }
 
     @Test
-    void create_duplicate_throws() {
+    void lanza_excepcion_al_aplicar_dos_veces_a_la_misma_oferta() {
         when(offerRepository.findById(applicationRequest.offerId())).thenReturn(Optional.of(offer));
         when(userRepository.findByEmail(applicant.getEmail())).thenReturn(Optional.of(applicant));
         when(applicationRepository.existsByOfferIdAndApplicantId(offer.getId(), applicant.getId())).thenReturn(true);
@@ -117,7 +117,7 @@ class ApplicationServiceImplTest {
     }
 
     @Test
-    void create_offerNotFound_throws() {
+    void lanza_not_found_si_la_oferta_no_existe() {
         when(offerRepository.findById(applicationRequest.offerId())).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class,
@@ -127,7 +127,7 @@ class ApplicationServiceImplTest {
     }
 
     @Test
-    void create_userNotFound_throws() {
+    void lanza_not_found_si_el_candidato_no_existe() {
         when(offerRepository.findById(applicationRequest.offerId())).thenReturn(Optional.of(offer));
         when(userRepository.findByEmail("nonexistent@test.com")).thenReturn(Optional.empty());
 
@@ -138,7 +138,7 @@ class ApplicationServiceImplTest {
     }
 
     @Test
-    void listByOffer_success() {
+    void lista_las_candidaturas_de_una_oferta_propia() {
         when(offerRepository.findById(offer.getId())).thenReturn(Optional.of(offer));
         when(applicationRepository.findByOfferId(offer.getId())).thenReturn(List.of(application));
         when(applicationMapper.toResponseList(List.of(application))).thenReturn(List.of(applicationResponse));
@@ -151,7 +151,7 @@ class ApplicationServiceImplTest {
     }
 
     @Test
-    void listByOffer_notOwner_throws() {
+    void lanza_forbidden_si_el_solicitante_no_es_el_dueno() {
         when(offerRepository.findById(offer.getId())).thenReturn(Optional.of(offer));
 
         assertThrows(ForbiddenOperationException.class,
@@ -161,7 +161,7 @@ class ApplicationServiceImplTest {
     }
 
     @Test
-    void listMine_success() {
+    void lista_las_candidaturas_del_usuario_autenticado() {
         when(userRepository.findByEmail(applicant.getEmail())).thenReturn(Optional.of(applicant));
         when(applicationRepository.findByApplicantId(applicant.getId())).thenReturn(List.of(application));
         when(applicationMapper.toResponseList(List.of(application))).thenReturn(List.of(applicationResponse));
@@ -174,7 +174,7 @@ class ApplicationServiceImplTest {
     }
 
     @Test
-    void updateStatus_success() {
+    void acepta_una_candidatura_de_una_oferta_propia() {
         ApplicationStatusRequest statusRequest = TestObjectFactory.createApplicationStatusRequest(ApplicationStatus.ACCEPTED);
         ApplicationResponse acceptedResponse = new ApplicationResponse(
                 1L, 1L, "Test Offer",
@@ -195,7 +195,7 @@ class ApplicationServiceImplTest {
     }
 
     @Test
-    void updateStatus_notOwner_throws() {
+    void lanza_forbidden_al_cambiar_el_estado_sin_ser_el_dueno() {
         ApplicationStatusRequest statusRequest = TestObjectFactory.createApplicationStatusRequest(ApplicationStatus.ACCEPTED);
 
         when(applicationRepository.findById(application.getId())).thenReturn(Optional.of(application));
@@ -207,7 +207,7 @@ class ApplicationServiceImplTest {
     }
 
     @Test
-    void updateStatus_applicationNotFound_throws() {
+    void lanza_not_found_si_la_candidatura_no_existe() {
         ApplicationStatusRequest statusRequest = TestObjectFactory.createApplicationStatusRequest(ApplicationStatus.ACCEPTED);
 
         when(applicationRepository.findById(999L)).thenReturn(Optional.empty());

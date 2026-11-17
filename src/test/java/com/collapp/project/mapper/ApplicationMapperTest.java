@@ -30,7 +30,7 @@ class ApplicationMapperTest {
     }
 
     @Test
-    void toResponse_pending_hidesContact() {
+    void toResponse_oculta_el_contacto_si_esta_pendiente() {
         Application application = TestObjectFactory.createApplication(1L, offer, applicant, ApplicationStatus.PENDING);
 
         ApplicationResponse response = applicationMapper.toResponse(application);
@@ -43,7 +43,7 @@ class ApplicationMapperTest {
     }
 
     @Test
-    void toResponse_rejected_hidesContact() {
+    void toResponse_oculta_el_contacto_si_esta_rechazada() {
         Application application = TestObjectFactory.createApplication(1L, offer, applicant, ApplicationStatus.REJECTED);
 
         ApplicationResponse response = applicationMapper.toResponse(application);
@@ -54,7 +54,7 @@ class ApplicationMapperTest {
     }
 
     @Test
-    void toResponse_accepted_showsContact() {
+    void toResponse_muestra_el_contacto_si_esta_aceptada() {
         Application application = TestObjectFactory.createApplication(1L, offer, applicant, ApplicationStatus.ACCEPTED);
 
         ApplicationResponse response = applicationMapper.toResponse(application);
@@ -65,7 +65,7 @@ class ApplicationMapperTest {
     }
 
     @Test
-    void toResponse_mapsAllFields() {
+    void toResponse_mapea_todos_los_campos() {
         Application application = TestObjectFactory.createApplication(offer, applicant);
 
         ApplicationResponse response = applicationMapper.toResponse(application);
