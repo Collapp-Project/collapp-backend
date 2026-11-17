@@ -124,7 +124,7 @@ class OfferServiceImplTest {
     }
 
     @Test
-    void lanza_not_found_si_la_oferta_no_existe() {
+    void lanza_not_found_si_la_oferta_a_actualizar_no_existe() {
         when(offerRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class,
@@ -171,7 +171,7 @@ class OfferServiceImplTest {
     }
 
     @Test
-    void lanza_not_found_si_la_oferta_no_existe() {
+    void lanza_not_found_si_la_oferta_buscada_no_existe() {
         when(offerRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class,

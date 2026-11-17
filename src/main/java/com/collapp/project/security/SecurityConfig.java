@@ -40,6 +40,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/error").permitAll()
+                        .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         // El orden importa: "/api/offers/*" casaría con /mine y /all,
                         // así que las rutas específicas deben evaluarse antes que el detalle público.
                         .requestMatchers(HttpMethod.GET, "/api/offers/all").hasRole("ADMIN")
