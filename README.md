@@ -9,8 +9,8 @@ REST API backend for Collapp, a professional collaboration platform for creative
 
 ## 🔗 Repositories
 
-- Frontend: [collapp-frontend](https://github.com/Collapp-Final-Project/collapp-frontend)
-- Backend: [collapp-backend](https://github.com/Collapp-Final-Project/collapp-backend)
+- Frontend: [collapp-frontend](https://github.com/Collapp-Project/collapp-frontend)
+- Backend: [collapp-backend](https://github.com/Collapp-Project/collapp-backend)
 
 ## 🛠️ Tech Stack
 
