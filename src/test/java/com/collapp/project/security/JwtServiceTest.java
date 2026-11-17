@@ -30,7 +30,7 @@ class JwtServiceTest {
     }
 
     @Test
-    void generateAndExtractEmail() {
+    void genera_un_token_y_extrae_el_email_del_subject() {
         String token = jwtService.generateToken(userDetails);
 
         assertNotNull(token);
@@ -39,7 +39,7 @@ class JwtServiceTest {
     }
 
     @Test
-    void isTokenValid_correctUser() {
+    void valida_el_token_del_usuario_correcto() {
         String token = jwtService.generateToken(userDetails);
 
         boolean isValid = jwtService.isTokenValid(token, userDetails);
@@ -48,7 +48,7 @@ class JwtServiceTest {
     }
 
     @Test
-    void isTokenValid_wrongUser() {
+    void rechaza_el_token_de_otro_usuario() {
         String token = jwtService.generateToken(userDetails);
 
         User wrongUser = TestObjectFactory.createUser2();
@@ -60,7 +60,7 @@ class JwtServiceTest {
     }
 
     @Test
-    void tokenGeneration_includesRole() {
+    void el_token_generado_incluye_el_email_y_el_rol() {
         String token = jwtService.generateToken(userDetails);
         String email = jwtService.extractEmail(token);
 

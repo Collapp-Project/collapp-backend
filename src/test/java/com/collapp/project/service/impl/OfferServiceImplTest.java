@@ -5,6 +5,7 @@ import com.collapp.project.dto.offer.OfferResponse;
 import com.collapp.project.entity.Offer;
 import com.collapp.project.entity.User;
 import com.collapp.project.entity.enums.CompensationType;
+import com.collapp.project.entity.enums.Location;
 import com.collapp.project.entity.enums.OfferStatus;
 import com.collapp.project.entity.enums.Specialty;
 import com.collapp.project.exception.ForbiddenOperationException;
@@ -67,15 +68,16 @@ class OfferServiceImplTest {
         offerRequest = TestObjectFactory.createOfferRequest();
         offerResponse = new OfferResponse(
                 1L, creator.getId(), creator.getUsername(), creator.getAvatarUrl(),
-                "Test Offer", "A test offer description", Specialty.MAKEUP, "Barcelona",
+                "Test Offer", "A test offer description", Specialty.MAKEUP, Location.BARCELONA,
                 LocalDate.of(2026, 8, 1), LocalDate.of(2026, 8, 15),
                 CompensationType.PAID, OfferStatus.OPEN, null
         );
     }
 
     @Test
-    void create_success() {
+    void crea_una_oferta_y_devuelve_la_respuesta() {
         when(userRepository.findByEmail(creator.getEmail())).thenReturn(Optional.of(creator));
+        when(offerMapper.toEntity(offerRequest, creator)).thenReturn(offer);
         when(offerRepository.save(any(Offer.class))).thenReturn(offer);
         when(offerMapper.toResponse(offer)).thenReturn(offerResponse);
 
@@ -83,12 +85,13 @@ class OfferServiceImplTest {
 
         assertNotNull(result);
         assertEquals("Test Offer", result.title());
+        verify(offerMapper).toEntity(offerRequest, creator);
         verify(offerRepository).save(any(Offer.class));
         verify(offerMapper).toResponse(offer);
     }
 
     @Test
-    void create_userNotFound_throws() {
+    void lanza_not_found_si_el_creador_no_existe() {
         when(userRepository.findByEmail("nonexistent@test.com")).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class,
@@ -98,7 +101,7 @@ class OfferServiceImplTest {
     }
 
     @Test
-    void update_success() {
+    void actualiza_una_oferta_propia() {
         when(offerRepository.findById(offer.getId())).thenReturn(Optional.of(offer));
         when(offerRepository.save(any(Offer.class))).thenReturn(offer);
         when(offerMapper.toResponse(offer)).thenReturn(offerResponse);
@@ -106,11 +109,12 @@ class OfferServiceImplTest {
         OfferResponse result = offerService.update(offer.getId(), offerRequest, creator.getEmail());
 
         assertNotNull(result);
+        verify(offerMapper).updateEntity(offer, offerRequest);
         verify(offerRepository).save(offer);
     }
 
     @Test
-    void update_notOwner_throws() {
+    void lanza_forbidden_si_el_solicitante_no_es_el_dueno() {
         when(offerRepository.findById(offer.getId())).thenReturn(Optional.of(offer));
 
         assertThrows(ForbiddenOperationException.class,
@@ -120,7 +124,7 @@ class OfferServiceImplTest {
     }
 
     @Test
-    void update_offerNotFound_throws() {
+    void lanza_not_found_si_la_oferta_no_existe() {
         when(offerRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class,
@@ -128,7 +132,7 @@ class OfferServiceImplTest {
     }
 
     @Test
-    void delete_owner_success() {
+    void elimina_la_oferta_siendo_el_dueno() {
         when(offerRepository.findById(offer.getId())).thenReturn(Optional.of(offer));
 
         offerService.delete(offer.getId(), creator.getEmail(), false);
@@ -137,7 +141,7 @@ class OfferServiceImplTest {
     }
 
     @Test
-    void delete_admin_success() {
+    void elimina_cualquier_oferta_siendo_admin() {
         when(offerRepository.findById(offer.getId())).thenReturn(Optional.of(offer));
 
         offerService.delete(offer.getId(), adminUser.getEmail(), true);
@@ -146,7 +150,7 @@ class OfferServiceImplTest {
     }
 
     @Test
-    void delete_notOwnerNotAdmin_throws() {
+    void lanza_forbidden_si_no_es_dueno_ni_admin() {
         when(offerRepository.findById(offer.getId())).thenReturn(Optional.of(offer));
 
         assertThrows(ForbiddenOperationException.class,
@@ -156,7 +160,7 @@ class OfferServiceImplTest {
     }
 
     @Test
-    void getById_success() {
+    void devuelve_una_oferta_por_su_id() {
         when(offerRepository.findById(offer.getId())).thenReturn(Optional.of(offer));
         when(offerMapper.toResponse(offer)).thenReturn(offerResponse);
 
@@ -167,7 +171,7 @@ class OfferServiceImplTest {
     }
 
     @Test
-    void getById_notFound_throws() {
+    void lanza_not_found_si_la_oferta_no_existe() {
         when(offerRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class,
@@ -175,7 +179,7 @@ class OfferServiceImplTest {
     }
 
     @Test
-    void list_withCategory() {
+    void lista_las_ofertas_abiertas_de_una_categoria() {
         Pageable pageable = PageRequest.of(0, 10);
         Page<Offer> offerPage = new PageImpl<>(List.of(offer), pageable, 1);
 
@@ -191,7 +195,7 @@ class OfferServiceImplTest {
     }
 
     @Test
-    void list_withoutCategory() {
+    void lista_todas_las_ofertas_abiertas() {
         Pageable pageable = PageRequest.of(0, 10);
         Page<Offer> offerPage = new PageImpl<>(List.of(offer), pageable, 1);
 
@@ -206,7 +210,7 @@ class OfferServiceImplTest {
     }
 
     @Test
-    void updateStatus_success() {
+    void cambia_el_estado_de_una_oferta_propia() {
         when(offerRepository.findById(offer.getId())).thenReturn(Optional.of(offer));
         when(offerRepository.save(any(Offer.class))).thenReturn(offer);
         when(offerMapper.toResponse(offer)).thenReturn(offerResponse);
@@ -218,7 +222,7 @@ class OfferServiceImplTest {
     }
 
     @Test
-    void listMine_success() {
+    void lista_las_ofertas_del_usuario_autenticado() {
         when(userRepository.findByEmail(creator.getEmail())).thenReturn(Optional.of(creator));
         when(offerRepository.findByCreatorId(creator.getId())).thenReturn(List.of(offer));
         when(offerMapper.toResponseList(List.of(offer))).thenReturn(List.of(offerResponse));
@@ -231,7 +235,7 @@ class OfferServiceImplTest {
     }
 
     @Test
-    void listAll_success() {
+    void lista_todas_las_ofertas_para_el_admin() {
         when(offerRepository.findAll()).thenReturn(List.of(offer));
         when(offerMapper.toResponseList(List.of(offer))).thenReturn(List.of(offerResponse));
 

@@ -1,11 +1,16 @@
 # 🤝 Collapp Backend
 
+[![Java](https://img.shields.io/badge/Java-25-orange.svg)](https://www.oracle.com/java/technologies/downloads/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.16-6DB33F.svg)](https://spring.io/projects/spring-boot)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1.svg)](https://www.postgresql.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
+
 REST API backend for Collapp, a professional collaboration platform for creatives in the audiovisual industry (makeup, photography/video, modeling/talent, and production). It allows users to register, publish project offers, apply to them, and manage received applications.
 
-## 🔗 Repositories:
+## 🔗 Repositories
 
-Frontend: [https://github.com/Collapp-Final-Project/collapp-frontend]
-Backend: [https://github.com/Collapp-Final-Project/collapp-backend]
+- Frontend: [collapp-frontend](https://github.com/Collapp-Project/collapp-frontend)
+- Backend: [collapp-backend](https://github.com/Collapp-Project/collapp-backend)
 
 ## 🛠️ Tech Stack
 
@@ -13,6 +18,7 @@ Backend: [https://github.com/Collapp-Final-Project/collapp-backend]
 - Spring Boot 3.5.16 (Web, Data JPA, Security, Validation)
 - PostgreSQL (production) / H2 (tests)
 - JWT (jjwt 0.12.6) — stateless authentication
+- Bean Validation, including custom class-level constraints (`@ValidDateRange`)
 - Maven (wrapper included)
 - Lombok
 
@@ -30,19 +36,13 @@ Copy the `.env.example` file to `.env` and configure the environment variables:
 cp .env.example .env
 ```
 
-```
-DB_URL=jdbc:postgresql://localhost:5432/collapp_app
-DB_USER=postgres
-DB_PASSWORD=your_password
-JWT_SECRET=your_jwt_secret
-```
-
 | Variable | Description | Default |
 |---|---|---|
 | `DB_URL` | PostgreSQL connection URL | `jdbc:postgresql://localhost:5432/collapp_app` |
 | `DB_USER` | PostgreSQL username | — |
 | `DB_PASSWORD` | PostgreSQL password | — |
 | `JWT_SECRET` | Secret key for signing JWT tokens | — |
+| `SPRING_PROFILES_ACTIVE` | Active profile. Set to `dev` to enable sample data seeding | — |
 
 The application automatically loads these variables thanks to `spring-dotenv`.
 
@@ -96,6 +96,10 @@ Tests use an in-memory H2 database (`application-test.properties`), no PostgreSQ
               └───────┬────────┘
                       │
               ┌───────▼────────┐
+              │    Mappers     │  ← Entity ⇄ DTO conversion
+              └───────┬────────┘
+                      │
+              ┌───────▼────────┐
               │  Repositories  │  ← Spring Data JPA
               │   (JPA)        │
               └───────┬────────┘
@@ -108,7 +112,7 @@ Tests use an in-memory H2 database (`application-test.properties`), no PostgreSQ
 │                      SECURITY                             │
 │                                                         │
 │  JwtAuthFilter ──► SecurityConfig ──► BCrypt + JWT      │
-│  (OncePerRequestFilter)    (antMatchers, CORS)          │
+│  (OncePerRequestFilter)    (route rules, CORS)          │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -137,8 +141,8 @@ Tests use an in-memory H2 database (`application-test.properties`), no PostgreSQ
 | creator_id | BIGINT | FK |
 | title | VARCHAR | |
 | description | TEXT | |
-| category | VARCHAR | |
-| location | VARCHAR | |
+| category | VARCHAR | Specialty enum |
+| location | VARCHAR | Location enum (Spanish provinces) |
 | start_date | DATE | |
 | end_date | DATE | |
 | compensation_type | VARCHAR | |
@@ -149,7 +153,7 @@ Tests use an in-memory H2 database (`application-test.properties`), no PostgreSQ
 | Field | Type | Notes |
 |---|---|---|
 | id | BIGINT | PK |
-| offer_id | BIGINT | FK |
+| offer_id | BIGINT | FK, unique per applicant |
 | applicant_id | BIGINT | FK |
 | message | TEXT | |
 | status | VARCHAR | |
@@ -191,20 +195,44 @@ Relationships: a user **creates** offers, **applies** to offers, and **receives*
 | GET | `/api/applications/mine` | Yes | My applications |
 | PATCH | `/api/applications/{id}/status` | Yes (offer owner) | Accept/reject application (`ACCEPTED` / `REJECTED`) |
 
+## 🧯 Error Contract
+
+Every error response shares a single shape (`ApiError`), including errors raised
+inside the Spring Security filter chain, so the frontend never has to guess:
+
+```json
+{
+  "timestamp": "2026-11-17T18:32:21.980+01:00",
+  "status": 400,
+  "error": "VALIDATION_ERROR",
+  "message": "Hay errores de validación en los datos enviados",
+  "path": "/api/offers",
+  "fields": {
+    "title": "El título es obligatorio",
+    "_form": "La fecha de fin no puede ser anterior a la fecha de inicio"
+  }
+}
+```
+
+- `error` is a stable, machine-readable code (`VALIDATION_ERROR`, `NOT_FOUND`, `FORBIDDEN`…).
+- `fields` appears on validation 400s, mapping each input to its error message.
+- Class-level constraints (such as `@ValidDateRange`) report under the `_form` key.
+
 ## 📏 Business Rules
 
 - You cannot apply to your own offers
 - You cannot apply twice to the same offer
 - Only the offer's creator can view and manage its applications
 - When an application is accepted, the applicant's email and Instagram are revealed
+- An offer's end date cannot be before its start date (`@ValidDateRange`)
+- Offer locations are normalized Spanish provinces (`Location` enum)
+- New applications always start as `PENDING`; only the offer owner can accept or reject them
 
 ## 📁 Project Structure
 
 ```
 src/main/java/com/collapp/project/
 ├── CollappApplication.java          # Entry point
-├── config/
-│   └── SecurityConfig.java          # Spring Security + CORS
 ├── controller/
 │   ├── AuthController.java
 │   ├── UserController.java
@@ -214,12 +242,13 @@ src/main/java/com/collapp/project/
 │   ├── auth/                        # RegisterRequest, LoginRequest, AuthResponse
 │   ├── user/                        # UserResponse, UserUpdateRequest
 │   ├── offer/                       # OfferRequest, OfferResponse, OfferStatusRequest
-│   └── application/                 # ApplicationRequest, ApplicationResponse, ApplicationStatusRequest
+│   ├── application/                 # ApplicationRequest, ApplicationResponse, ApplicationStatusRequest
+│   └── error/                       # ApiError (single error contract)
 ├── entity/
 │   ├── User.java
 │   ├── Offer.java
 │   ├── Application.java
-│   └── enums/                       # SystemRole, Specialty, ApplicationStatus, OfferStatus, CompensationType
+│   └── enums/                       # SystemRole, Specialty, Location, ApplicationStatus, OfferStatus, CompensationType
 ├── exception/
 │   ├── ResourceNotFoundException.java
 │   ├── ForbiddenOperationException.java
@@ -235,13 +264,20 @@ src/main/java/com/collapp/project/
 │   ├── OfferRepository.java
 │   └── ApplicationRepository.java
 ├── seeder/
-│   └── DataSeeder.java
+│   └── DataSeeder.java              # Only runs under the "dev" profile
 ├── security/
+│   ├── SecurityConfig.java          # Spring Security + CORS
 │   ├── JwtService.java
 │   ├── JwtAuthFilter.java
 │   ├── CustomUserDetails.java
 │   ├── CustomUserDetailsService.java
-│   └── AuthHelper.java
+│   ├── AuthHelper.java
+│   ├── ApiErrorWriter.java          # Writes ApiError JSON from the filter chain
+│   ├── RestAuthenticationEntryPoint.java   # 401 in ApiError format
+│   └── RestAccessDeniedHandler.java       # 403 in ApiError format
+├── validation/
+│   ├── ValidDateRange.java          # Class-level date-range constraint
+│   └── ValidDateRangeValidator.java
 └── service/
     ├── AuthService.java
     ├── UserService.java
@@ -268,7 +304,8 @@ src/main/java/com/collapp/project/
 
 ## 🌱 Seeders
 
-On startup with an empty database, 3 test users are automatically created:
+With an empty database and the `dev` profile active
+(`SPRING_PROFILES_ACTIVE=dev`), 3 test users are created automatically:
 
 | User | Email | Password | Role | Specialty |
 |---|---|---|---|---|
@@ -276,9 +313,26 @@ On startup with an empty database, 3 test users are automatically created:
 | lola_sfx | lola@makeup.com | 12345678 | CREATIVE | MAKEUP |
 | alex_photo | alex@photo.com | 12345678 | CREATIVE | PHOTOGRAPHY_VIDEO |
 
-## 🌐 CORS
+The seeder never runs without the `dev` profile, so a deployed environment will
+not create known-password accounts.
 
-Configured to accept requests from `http://localhost:5173` (React/Vite frontend).
+## 🗺️ Roadmap
+
+This project is a living portfolio: it keeps evolving following the plan in
+[docs/ROADMAP.md](docs/ROADMAP.md).
+
+| Block | Content | Status |
+|---|---|---|
+| Error contract & correct HTTP codes | `ApiError`, 401/403 handlers, no silent 500s | ✅ Done |
+| Presentation feedback | Date-range validation, entity construction in mappers, normalized locations | ✅ Done |
+| API docs, integration tests & CI | OpenAPI/Swagger, Testcontainers, GitHub Actions | 🔜 Next |
+| Transactions, N+1 & migrations | `@Transactional`, `@EntityGraph`, Flyway | ⏳ Planned |
+| Docker & deployment | Multi-stage Dockerfile, docker-compose, live API | ⏳ Planned |
+| New product features | Avatar upload, search, public profiles, notifications | ⏳ Planned |
+
+## 📄 License
+
+Distributed under the [MIT License](LICENSE).
 
 ---
 

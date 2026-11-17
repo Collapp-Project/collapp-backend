@@ -1,6 +1,5 @@
-package com.collapp.project.config;
+package com.collapp.project.security;
 
-import com.collapp.project.security.JwtAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,6 +29,8 @@ public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
     private final UserDetailsService userDetailsService;
+    private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
+    private final RestAccessDeniedHandler restAccessDeniedHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -39,9 +40,15 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/error").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/offers").permitAll()
+                        // El orden importa: "/api/offers/*" casaría con /mine y /all,
+                        // así que las rutas específicas deben evaluarse antes que el detalle público.
                         .requestMatchers(HttpMethod.GET, "/api/offers/all").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/offers/mine").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/offers", "/api/offers/*").permitAll()
                         .anyRequest().authenticated())
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint(restAuthenticationEntryPoint)
+                        .accessDeniedHandler(restAccessDeniedHandler))
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())

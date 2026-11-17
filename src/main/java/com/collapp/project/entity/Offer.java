@@ -10,9 +10,11 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import com.collapp.project.entity.enums.CompensationType;
+import com.collapp.project.entity.enums.Location;
 import com.collapp.project.entity.enums.OfferStatus;
 import com.collapp.project.entity.enums.Specialty;
 
+/** Sin @Data a propósito: generaría equals/hashCode sobre campos no estables y un toString que toca colecciones LAZY. */
 @Entity
 @Table(name = "offers")
 @Getter
@@ -43,8 +45,9 @@ public class Offer {
     @Column(nullable = false)
     private Specialty category;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String location;
+    private Location location;
 
     @Column(name = "start_date", nullable = false)
     private LocalDate startDate;

@@ -1,5 +1,6 @@
 package com.collapp.project.mapper;
 
+import com.collapp.project.dto.application.ApplicationRequest;
 import com.collapp.project.dto.application.ApplicationResponse;
 import com.collapp.project.entity.Application;
 import com.collapp.project.entity.Offer;
@@ -29,7 +30,7 @@ class ApplicationMapperTest {
     }
 
     @Test
-    void toResponse_pending_hidesContact() {
+    void toResponse_oculta_el_contacto_si_esta_pendiente() {
         Application application = TestObjectFactory.createApplication(1L, offer, applicant, ApplicationStatus.PENDING);
 
         ApplicationResponse response = applicationMapper.toResponse(application);
@@ -42,7 +43,7 @@ class ApplicationMapperTest {
     }
 
     @Test
-    void toResponse_rejected_hidesContact() {
+    void toResponse_oculta_el_contacto_si_esta_rechazada() {
         Application application = TestObjectFactory.createApplication(1L, offer, applicant, ApplicationStatus.REJECTED);
 
         ApplicationResponse response = applicationMapper.toResponse(application);
@@ -53,7 +54,7 @@ class ApplicationMapperTest {
     }
 
     @Test
-    void toResponse_accepted_showsContact() {
+    void toResponse_muestra_el_contacto_si_esta_aceptada() {
         Application application = TestObjectFactory.createApplication(1L, offer, applicant, ApplicationStatus.ACCEPTED);
 
         ApplicationResponse response = applicationMapper.toResponse(application);
@@ -64,7 +65,7 @@ class ApplicationMapperTest {
     }
 
     @Test
-    void toResponse_mapsAllFields() {
+    void toResponse_mapea_todos_los_campos() {
         Application application = TestObjectFactory.createApplication(offer, applicant);
 
         ApplicationResponse response = applicationMapper.toResponse(application);
@@ -79,5 +80,18 @@ class ApplicationMapperTest {
         assertEquals(applicant.getAvatarUrl(), response.applicantAvatarUrl());
         assertEquals(application.getMessage(), response.message());
         assertEquals(application.getStatus(), response.status());
+    }
+
+    @Test
+    void toEntity_mapeaLosCamposYFijaEstadoInicial() {
+        ApplicationRequest request = TestObjectFactory.createApplicationRequest();
+
+        Application entity = applicationMapper.toEntity(request, offer, applicant);
+
+        assertNotNull(entity);
+        assertEquals(offer, entity.getOffer());
+        assertEquals(applicant, entity.getApplicant());
+        assertEquals(request.message(), entity.getMessage());
+        assertEquals(ApplicationStatus.PENDING, entity.getStatus());
     }
 }
