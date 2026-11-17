@@ -1,7 +1,8 @@
 package com.collapp.project.dto.offer;
 
-import com.collapp.project.entity.enums.OfferStatus;
 import com.collapp.project.entity.enums.CompensationType;
+import com.collapp.project.entity.enums.Location;
+import com.collapp.project.entity.enums.OfferStatus;
 import com.collapp.project.entity.enums.Specialty;
 import com.collapp.project.validation.ValidDateRange;
 import jakarta.validation.constraints.FutureOrPresent;
@@ -23,8 +24,8 @@ public record OfferRequest(
         @NotNull(message = "La categoría es obligatoria")
         Specialty category,
 
-        @NotBlank(message = "La ubicación es obligatoria")
-        String location,
+        @NotNull(message = "La ubicación es obligatoria")
+        Location location,
 
         @NotNull(message = "La fecha de inicio es obligatoria")
         @FutureOrPresent(message = "La fecha de inicio no puede ser pasada")

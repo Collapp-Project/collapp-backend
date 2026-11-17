@@ -11,6 +11,7 @@ import com.collapp.project.entity.Offer;
 import com.collapp.project.entity.User;
 import com.collapp.project.entity.enums.ApplicationStatus;
 import com.collapp.project.entity.enums.CompensationType;
+import com.collapp.project.entity.enums.Location;
 import com.collapp.project.entity.enums.OfferStatus;
 import com.collapp.project.entity.enums.Specialty;
 import com.collapp.project.entity.enums.SystemRole;
@@ -79,7 +80,7 @@ public class TestObjectFactory {
                 .title("Test Offer")
                 .description("A test offer description")
                 .category(Specialty.MAKEUP)
-                .location("Barcelona")
+                .location(Location.BARCELONA)
                 .startDate(LocalDate.of(2026, 8, 1))
                 .endDate(LocalDate.of(2026, 8, 15))
                 .compensationType(CompensationType.PAID)
@@ -94,7 +95,7 @@ public class TestObjectFactory {
                 .title(title)
                 .description("Description for " + title)
                 .category(Specialty.MAKEUP)
-                .location("Barcelona")
+                .location(Location.BARCELONA)
                 .startDate(LocalDate.of(2026, 8, 1))
                 .endDate(LocalDate.of(2026, 8, 15))
                 .compensationType(CompensationType.PAID)
@@ -142,7 +143,7 @@ public class TestObjectFactory {
                 "Test Offer",
                 "A test offer description",
                 Specialty.MAKEUP,
-                "Barcelona",
+                Location.BARCELONA,
                 LocalDate.of(2026, 8, 1),
                 LocalDate.of(2026, 8, 15),
                 CompensationType.PAID,
@@ -155,7 +156,7 @@ public class TestObjectFactory {
                 title,
                 "Description for " + title,
                 Specialty.PHOTOGRAPHY_VIDEO,
-                "Madrid",
+                Location.MADRID,
                 LocalDate.of(2026, 9, 1),
                 LocalDate.of(2026, 9, 15),
                 CompensationType.COLLABORATION,

@@ -5,6 +5,7 @@ import com.collapp.project.dto.offer.OfferResponse;
 import com.collapp.project.entity.Offer;
 import com.collapp.project.entity.User;
 import com.collapp.project.entity.enums.CompensationType;
+import com.collapp.project.entity.enums.Location;
 import com.collapp.project.entity.enums.OfferStatus;
 import com.collapp.project.entity.enums.Specialty;
 import com.collapp.project.exception.ForbiddenOperationException;
@@ -67,7 +68,7 @@ class OfferServiceImplTest {
         offerRequest = TestObjectFactory.createOfferRequest();
         offerResponse = new OfferResponse(
                 1L, creator.getId(), creator.getUsername(), creator.getAvatarUrl(),
-                "Test Offer", "A test offer description", Specialty.MAKEUP, "Barcelona",
+                "Test Offer", "A test offer description", Specialty.MAKEUP, Location.BARCELONA,
                 LocalDate.of(2026, 8, 1), LocalDate.of(2026, 8, 15),
                 CompensationType.PAID, OfferStatus.OPEN, null
         );
