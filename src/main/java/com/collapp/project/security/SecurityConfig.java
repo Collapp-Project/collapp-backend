@@ -40,8 +40,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/error").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/offers").permitAll()
+                        // El orden importa: "/api/offers/*" casaría con /mine y /all,
+                        // así que las rutas específicas deben evaluarse antes que el detalle público.
                         .requestMatchers(HttpMethod.GET, "/api/offers/all").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/offers/mine").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/offers", "/api/offers/*").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint(restAuthenticationEntryPoint)
